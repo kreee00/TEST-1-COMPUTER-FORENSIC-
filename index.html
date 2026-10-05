@@ -1,0 +1,585 @@
+<title>Computer Forensic Week 3 &amp; 5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: single reading column with sticky tab bar; notes as sections, quiz as stacked question blocks */
+:root{
+  --bg:#f3f5f7; --paper:#ffffff; --ink:#18212b; --muted:#5a6673; --line:#d9dfe5;
+  --accent:#1f4e79; --accent-soft:#e3ecf5; --mark:#fff1a8; --mark-ink:#3d3300;
+  --good:#1d7a46; --good-soft:#e2f4ea; --bad:#b3261e; --bad-soft:#fbe6e4;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11161c; --paper:#18202a; --ink:#e4e9ee; --muted:#9aa6b2; --line:#2a3542;
+  --accent:#8fb8e6; --accent-soft:#1d2c3d; --mark:#4a4214; --mark-ink:#fff3b0;
+  --good:#6fd19a; --good-soft:#163325; --bad:#ff8a80; --bad-soft:#3a1c1a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161c; --paper:#18202a; --ink:#e4e9ee; --muted:#9aa6b2; --line:#2a3542;
+  --accent:#8fb8e6; --accent-soft:#1d2c3d; --mark:#4a4214; --mark-ink:#fff3b0;
+  --good:#6fd19a; --good-soft:#163325; --bad:#ff8a80; --bad-soft:#3a1c1a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;padding-inline:16px;padding-block:0 48px}
+.wrap{max-width:820px;margin:0 auto}
+header.top{padding-block:28px 12px}
+.course{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-size:clamp(28px,6vw,40px);line-height:1.1;margin:6px 0 8px;text-wrap:balance}
+.sub{color:var(--muted);margin:0;max-width:62ch}
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;gap:6px;flex-wrap:wrap;padding-block:12px;border-bottom:1px solid var(--line);margin-bottom:20px}
+nav.tabs button{font:600 14px var(--f-body);padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+section.note{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:16px}
+section.note h2{font-family:var(--f-display);font-size:22px;margin:0 0 10px;text-wrap:balance;display:flex;gap:10px;align-items:baseline}
+section.note h2 .sl{font-family:var(--f-mono);font-size:12px;font-weight:400;color:var(--muted)}
+section.note h3{font-size:16px;margin:16px 0 6px;color:var(--accent)}
+section.note p{margin:6px 0;max-width:68ch}
+ul,ol{margin:6px 0;padding-left:22px}
+li{margin:3px 0}
+mark{background:var(--mark);color:var(--mark-ink);padding:0 3px;border-radius:3px}
+code,.path{font-family:var(--f-mono);font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:4px;word-break:break-all}
+pre{font-family:var(--f-mono);font-size:13px;background:var(--accent-soft);padding:12px;border-radius:8px;overflow-x:auto;line-height:1.5;margin:8px 0}
+.tbl{overflow-x:auto;margin:8px 0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:var(--accent-soft)}
+.tip{border-left:3px solid var(--accent);background:var(--accent-soft);padding:8px 12px;border-radius:0 6px 6px 0;margin:10px 0;font-size:15px}
+.week-h{font-family:var(--f-display);font-size:26px;margin:4px 0 14px}
+/* quiz */
+.qbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:16px}
+.score{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:15px}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.filters button,.reset{font:500 13px var(--f-body);padding:6px 12px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.filters button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.q{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:14px}
+.qhead{display:flex;gap:10px;align-items:baseline;margin-bottom:10px}
+.qnum{font-family:var(--f-mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.qtext{font-weight:600;min-width:0}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;font:15px/1.45 var(--f-body);padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);cursor:pointer;display:flex;gap:10px}
+.opt .k{font-family:var(--f-mono);font-weight:500;color:var(--muted)}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--good);background:var(--good-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.fb{margin-top:12px;padding:10px 12px;border-radius:8px;font-size:15px}
+.fb.ok{background:var(--good-soft);border:1px solid var(--good)}
+.fb.no{background:var(--bad-soft);border:1px solid var(--bad)}
+.fb b{display:block;margin-bottom:2px}
+.chip{font-family:var(--f-mono);font-size:11px;padding:1px 6px;border-radius:4px;border:1px solid var(--line);color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.fb{animation:in .2s ease-out}@keyframes in{from{opacity:.4;transform:translateY(-3px)}to{opacity:1;transform:none}}}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="course">TEB3213 / TFB2143 · Computer Forensic</div>
+  <h1>Week 3 &amp; Week 5 Study Notes</h1>
+  <p class="sub">Simple notes for every slide, then MCQs. Tap an answer to see if you are right, with a short note that explains it.</p>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" id="t-w3" aria-selected="true" data-tab="w3">Notes · Week 3</button>
+  <button role="tab" id="t-w5" aria-selected="false" data-tab="w5">Notes · Week 5</button>
+  <button role="tab" id="t-quiz" aria-selected="false" data-tab="quiz">MCQ Quiz</button>
+</nav>
+
+<!-- ===================== WEEK 3 ===================== -->
+<div id="p-w3" role="tabpanel">
+<div class="week-h">Week 3 · Acquiring Digital Evidences</div>
+
+<section class="note"><h2>Learning outcomes <span class="sl">slide 2</span></h2>
+<ul><li>Digital crimes &amp; victims, and their key characteristics</li><li>Steps in a digital forensics investigation</li><li>Software tools used for different operating systems (OSs)</li><li>Hands-on demos</li><li>Programming for digital forensics</li></ul></section>
+
+<section class="note"><h2>Elements of a digital crime <span class="sl">slide 3</span></h2>
+<p>To prove a digital crime, the <mark>investigator</mark> needs these elements to reach a conclusion. All elements are linked to each other.</p>
+<ul><li><b>Evidence</b> – sits in the <b>centre</b> and links the others</li><li><b>Crime scene</b></li><li><b>Suspect / Criminal</b></li><li><b>Victim</b></li></ul></section>
+
+<section class="note"><h2>Digital crime scene <span class="sl">slides 4–6</span></h2>
+<p>A <b>digital crime scene</b> is the <b>virtual or electronic environment</b> where a cybercrime or digital incident happened. Working on it means <b>collecting, analysing and preserving</b> digital evidence to understand the crime.</p>
+<h3>7 key characteristics</h3>
+<ol>
+<li><b>Virtual nature</b> – it exists in the virtual world (computers, networks, digital devices) where electronic evidence is stored. Not like a normal physical crime scene.</li>
+<li><b>Data and artifacts</b> – contains files, logs, system configurations, network traffic and other digital traces left by criminals.</li>
+<li><b>Dynamic environment</b> – digital data changes fast, so investigators must work quickly to save evidence before it is changed or damaged.</li>
+<li><b>Specialized tools</b> – needs special forensic tools to collect, analyse and preserve evidence in a <b>forensically sound</b> way.</li>
+<li><b>Remote investigations</b> – may involve remote systems; investigators may need to work remotely or with people in other countries/places.</li>
+<li><b>Multidisciplinary approach</b> – mixes computer science, cybersecurity, law enforcement and legal procedures.</li>
+<li><b>Legal considerations</b> – evidence must follow legal standards so it is <b>admissible in court</b>. Chain of custody, proper documentation and best practices are very important.</li>
+</ol></section>
+
+<section class="note"><h2>Victim <span class="sl">slides 7–8</span></h2>
+<p>A <b>victim</b> is an <b>entity or individual (person or organization)</b> that suffered harm, damage or compromise because of a cybercrime or digital incident.</p>
+<h3>Key points about victims</h3>
+<ol>
+<li><b>Individuals or organizations</b> – e.g. people whose personal information was stolen or misused.</li>
+<li><b>Harm or compromise</b> – many forms: unauthorized access to sensitive data, financial losses, disruption of services, reputation damage.</li>
+<li><b>Forensic investigation</b> – investigators find the details of the crime and its impact on the victim.</li>
+<li><b>Legal considerations</b> – victims play a big role in court cases; collected evidence is used to build a case against the perpetrators (attackers).</li>
+</ol></section>
+
+<section class="note"><h2>5 goals of a forensic investigation <span class="sl">slide 9</span></h2>
+<ol><li><b>What</b> is the crime and evidence?</li><li><b>Where</b> can it be found?</li><li><b>When</b> was the crime committed?</li><li><b>Who</b> is the culprit?</li><li><b>How</b> was the crime committed?</li></ol>
+<div class="tip">Easy memory: What · Where · When · Who · How.</div></section>
+
+<section class="note"><h2>Classification of digital forensics <span class="sl">slides 10–12</span></h2>
+<div class="tbl"><table><tr><th>Type</th><th>What it looks at</th></tr>
+<tr><td>1. Computer forensics</td><td>The <b>most primitive (oldest)</b> type, started early in computer history. Computers, laptops, logs, USB drives, hard drives, operating systems.</td></tr>
+<tr><td>2. Network forensics</td><td>Network events, intrusion, and data packets sent, to detect network attacks.</td></tr>
+<tr><td>3. Multimedia forensics</td><td>Images, audio and video files recovered as evidence.</td></tr>
+<tr><td>4. Mobile forensics</td><td>Smartphones (Android, iOS) – finding evidence and recovering deleted data.</td></tr>
+<tr><td>5. Memory forensics</td><td>The memory / <b>RAM dump</b> – volatile data like chat history, clipboard history, browser history.</td></tr>
+<tr><td>6. Cloud forensics</td><td>The cloud environment; virtual storage is in high demand, so it is key for gathering evidence.</td></tr>
+</table></div>
+<h3>Class discussion (slide 13)</h3>
+<p>For a complex cyber attack with evidence in all 6 areas: which type would you start with and why, and how does your approach change for each type? (Hint: volatile data such as memory is often handled first because it is lost fast.)</p></section>
+
+<section class="note"><h2>Examples of digital evidence <span class="sl">slide 14</span></h2>
+<p>Laptops/computers, e-mails, multimedia, SIM cards, HDD/SSD, USB/flash drives, PDAs/tablets, logs/events, browser history – and the list goes on.</p></section>
+
+<section class="note"><h2>Data vs Metadata <span class="sl">slide 15</span></h2>
+<div class="tbl"><table><tr><th></th><th>Data</th><th>Metadata</th></tr>
+<tr><td>Meaning</td><td>Any information stored in the memory of a device</td><td>Describes and gives information <b>about</b> the data</td></tr>
+<tr><td>State</td><td>Usually <b>raw and unprocessed</b></td><td><b>Always processed</b></td></tr>
+<tr><td>Example</td><td>The words written inside a document</td><td>File type, file size, file name</td></tr></table></div></section>
+
+<section class="note"><h2>3 principles of digital forensics <span class="sl">slide 16</span></h2>
+<ol>
+<li><b>Securing the crime scene</b> – block any access to the suspected evidence, document all processes and connections, disconnect wireless connections, etc.</li>
+<li><b>Limiting evidence interaction</b> – touch the evidence as little as possible, e.g. capture the RAM first to avoid damage.</li>
+<li><b>Maintaining chain of custody</b> – a record of the order in which evidence was collected, date and timestamps, and which investigator accessed and handled it.</li>
+</ol></section>
+
+<section class="note"><h2>8-step digital forensic process <span class="sl">slides 17–18</span></h2>
+<ol>
+<li><b>Identification</b> – first step at the scene: know the purpose of the investigation and spot possible evidence.</li>
+<li><b>Preservation</b> – make sure evidence is <b>not tampered</b> (changed).</li>
+<li><b>Collection</b> – acquire evidence properly without harming it, and pack it in a <mark>Faraday bag</mark> (blocks wireless signals).</li>
+<li><b>Examination</b> – careful inspection before analysis; comes <b>before</b> analysis (a precursor).</li>
+<li><b>Analysis</b> – the most crucial work: joining pieces of evidence together, retrieving deleted files, etc.</li>
+<li><b>Interpretation</b> – making conclusions from the findings after reconstructing the crime scene.</li>
+<li><b>Documentation</b> – writing a detailed report on the whole investigation.</li>
+<li><b>Presentation</b> – only needed when asked for cross-examination (court); explained in very simple words for normal people.</li>
+</ol>
+<div class="tip">Order: Identification → Preservation → Collection → Examination → Analysis → Interpretation → Documentation → Presentation (“I Prefer Coffee Every Afternoon In December, Please”).</div></section>
+
+<section class="note"><h2>Types of forensic tools <span class="sl">slides 19–23</span></h2>
+<div class="tbl"><table><tr><th>Type</th><th>Meaning</th><th>Examples</th></tr>
+<tr><td><b>Open source</b></td><td>Free, source code free for everyone, anyone can modify. Built by a community.</td><td><b>Autopsy</b> – forensics platform + GUI, made by <mark>the Sleuth Kit lab</mark>. <b>Wireshark</b> – network protocol analyzer, capture and browse network traffic.</td></tr>
+<tr><td><b>Proprietary</b></td><td>Owned by a company, paid (purchase or subscription), source code protected. Has customer support and regular updates.</td><td><b>EnCase</b> – end-to-end solution from forensic acquisition to reporting. <b>AccessData FTK</b> – court-cited platform built for speed, stability, ease of use.</td></tr>
+<tr><td><b>Self-created</b></td><td>Made in-house by a user/investigator for special needs not met by other tools; automates the process.</td><td>Python (or other language) scripts; custom applications for unique systems or proprietary hardware.</td></tr></table></div>
+<p><b>Discussion:</b> What are the pros and cons of each type? In practice an investigator usually uses a <b>combination</b> of them.</p></section>
+
+<section class="note"><h2>Autopsy platform <span class="sl">slides 24–27</span></h2>
+<p>Widely known <b>open-source</b> platform. <mark>It gives a graphical interface used by law enforcement, military and corporate examiners to investigate what happened on a computer.</mark></p>
+<ul>
+<li><b>Modular architecture</b> – add new functions with plugins and modules</li>
+<li><b>File system analysis</b> – NTFS, FAT, exFAT, HFS+, ext2/3/4</li>
+<li><b>Timeline analysis</b> – timing of file activities</li>
+<li><b>Keyword searching</b> – find specific info in the data</li>
+<li><b>Web artifacts</b> – extracts web browsing data</li>
+<li><b>Registry analysis</b> – analyses Windows registry files</li>
+<li><b>Email analysis</b> – recovers and analyses emails from different clients</li>
+</ul>
+<p>Download: <span class="path">https://www.autopsy.com/</span>. Tutorial video: “Starting a New Digital Forensic Investigation Case in Autopsy 4.19+”. Hands-on (done in class): forensic audit of a pen drive / hard drive / floppy drive.</p></section>
+
+<section class="note"><h2>Key open-source forensic tools <span class="sl">slide 28</span></h2>
+<div class="tbl"><table><tr><th>Tool</th><th>Use</th></tr>
+<tr><td>Wireshark</td><td>Network protocol analyzer – capture &amp; analyse network traffic</td></tr>
+<tr><td>The Sleuth Kit (TSK)</td><td>Library for analysing disk images and recovering data</td></tr>
+<tr><td>Volatility</td><td>Advanced <b>memory</b> forensics framework</td></tr>
+<tr><td>CAINE</td><td>Complete forensic environment that combines existing tools</td></tr>
+<tr><td>GRR</td><td><b>Live</b> forensics tool for <b>remote</b> incident management</td></tr>
+<tr><td>Plaso</td><td>Extracts <b>timelines</b> from many sources</td></tr>
+<tr><td>DEFT</td><td>Linux distribution for forensic analysis with many tools</td></tr>
+<tr><td>ExifTool</td><td>Read, write and change <b>metadata</b></td></tr></table></div>
+<h3>Other open-source tool areas (slide 29 diagram)</h3>
+<ol><li>Computer forensics – universal tools, Windows apps, file system, file provenance</li><li>Software forensics incl. DBs – email, web browser, database</li><li>Multimedia forensics – video files, image file carving</li><li>Device / IoT forensics – mobile devices, drone, smarthome, Xbox, PLC/SCADA, VR</li><li>Network forensics – protocols, attack identification, cloud</li><li>Malware forensics – computer, mobile devices (Android)</li><li>Memory forensics – acquisition, analysis</li></ol>
+<p><b>Discussion (slide 30):</b> Which forensic tools are best? – It depends on the case and evidence type.</p></section>
+
+<section class="note"><h2>Windows / Mac / Linux forensics <span class="sl">slides 31–37</span></h2>
+<p>Each OS needs its own techniques and tools because each has its own file systems and features.</p>
+<div class="tbl"><table><tr><th>OS</th><th>File systems</th><th>Key locations</th><th>Tools</th></tr>
+<tr><td><b>Windows</b></td><td>FAT, exFAT, NTFS, ReFS</td><td>Recycle Bin, Registry, Event Logs, Prefetch files</td><td>EnCase, FTK, Autopsy</td></tr>
+<tr><td><b>Mac</b></td><td>HFS+, APFS</td><td>Trash, Spotlight database, Time Machine backups, plist files</td><td>BlackBag Technologies’ MacQuisition, Cellebrite, Sleuth Kit</td></tr>
+<tr><td><b>Linux</b></td><td>Ext2/3/4, XFS, Btrfs</td><td><span class="path">/var/log</span>, <span class="path">/home</span></td><td>CAINE, DEFT and other Linux live CDs</td></tr></table></div>
+<h3>Windows file systems</h3>
+<ul>
+<li><b>FAT</b> (File Allocation Table) – older, simple, very compatible, but has limits on file size and partition size.</li>
+<li><b>exFAT</b> (Extended FAT) – made for <b>flash storage</b>; supports bigger files than FAT32 without NTFS overhead; good for USB drives and SD cards.</li>
+<li><b>NTFS</b> (New Technology File System) – <b>standard</b> Windows file system; large volumes, file permissions, encryption; stronger than FAT/exFAT.</li>
+<li><b>ReFS</b> (Resilient File System) – for <b>data centres and enterprise</b>; focuses on data resilience, high availability, scalability.</li>
+</ul>
+<h3>Get-Acl (PowerShell)</h3>
+<p><mark>Get-Acl</mark> is a PowerShell command that gets the <b>Access Control List (ACL)</b> of a file, folder or registry key. <mark>ACLs</mark> show <b>who</b> can access an object and <b>what</b> permissions they have (Read, Write, Execute). Open PowerShell from RUN.</p>
+<pre>PS C:\Users\fasee.ullah\Desktop&gt; get-acl '.\MBOT - ... - Payment.pdf'
+Path: MBOT ... Payment.pdf   Owner: CORP\fasee.ullah
+Access: NT AUTHORITY\SYSTEM Allow FullControl ...</pre>
+<p>The output shows the <b>Path</b>, the <b>Owner</b> and the <b>Access</b> rights.</p>
+<p><b>Discussion (slide 38):</b> Why should we report cybercrime? (answer in CHFI section below)</p></section>
+
+<section class="note"><h2>Programming for digital forensics (Python) <span class="sl">slides 39–43</span></h2>
+<p>Digital forensics = recovering and investigating material from digital devices, often for computer crime. <mark>Python</mark> is useful because it is simple and has many libraries.</p>
+<div class="tbl"><table><tr><th>Library</th><th>Job</th><th>Key points</th></tr>
+<tr><td><mark>hashlib</mark></td><td>Hash a file for <b>data integrity</b></td><td>Opens file in binary mode <code>'rb'</code>, makes a <b>SHA-256</b> hash with <code>hashlib.sha256(...).hexdigest()</code>. Same hash later = file not changed.</td></tr>
+<tr><td><mark>Pillow</mark> (PIL)</td><td>Extract <b>metadata from images</b></td><td>Uses <code>Image.open</code>, <code>ExifTags.TAGS</code>, <code>image._getexif()</code>. Reads <mark>EXIF</mark>: camera model, date taken, GPS coordinates.</td></tr>
+<tr><td><mark>scapy</mark></td><td>Capture &amp; analyse <b>network packets</b></td><td><code>sniff(prn=packet_callback, count=10)</code> – sniffs and prints the <b>first 10 packets</b>.</td></tr></table></div></section>
+
+<section class="note"><h2>CHFI – Computer Hacking Forensic Investigator <span class="sl">slides 44–47</span></h2>
+<p>CHFI is a certification by <b>EC-Council</b>.</p>
+<h3>Module flow</h3>
+<p>Computer Forensics → Forensics Readiness, Cyber Crimes, Cyber Crime Investigation, Corporate Investigations, Reporting a Cyber Crime.</p>
+<h3>Computer forensics – 3 definitions</h3>
+<ol><li><b>Dr. H.B. Wolfe:</b> a methodical series of techniques and procedures for gathering evidence from computers and storage media, presented in court in a clear, meaningful format.</li>
+<li><b>CSI:</b> preservation, identification, extraction, interpretation and documentation of computer evidence, including rules of evidence, legal processes, integrity of evidence, factual reporting, and giving expert opinion in court.</li>
+<li><b>Forensic computing:</b> the science of capturing, processing and investigating data from computers using a method so the evidence is acceptable in a Court of Law.</li></ol>
+<h3>4 aspects of organizational security</h3>
+<ol><li><b>IT security</b> – application, computing, data, information, network security</li><li><b>Physical security</b> – facilities, human, border, biometric security</li><li><b>Financial security</b> – fraud, phishing attacks, botnets, threats from cyber criminals, credit card fraud</li><li><b>Legal security</b> – national security, public security, defamation, copyright information, sexual harassment</li></ol>
+<h3>Need for computer forensics</h3>
+<ol><li>Ensure the overall <b>integrity</b> and <b>continued existence</b> of the organization’s computer systems and network</li><li>Extract, process and interpret factual evidence to prove the <b>attacker’s actions in court</b></li><li>Efficiently <b>track down perpetrators</b> from different parts of the world</li><li>Protect the organization’s <b>money</b> and valuable <b>time</b></li></ol>
+<h3>Benefits of forensics readiness</h3>
+<ol><li>Evidence can be gathered for the <b>company’s defence</b> if sued</li><li>Fast, efficient investigation after a major incident with <b>minimal disruption</b> to business</li><li><b>Extends</b> information security to wider threats (IP protection, fraud, extortion)</li><li>Structured evidence storage <b>reduces cost and time</b> of internal investigations</li><li>Improves and simplifies the <b>law enforcement interface</b></li><li>Allows a proper, <b>in-depth investigation</b> for major incidents</li></ol>
+<h3>Forensics readiness planning</h3>
+<ol><li>Define the <b>business states</b> that need digital evidence</li><li>Identify the <b>potential evidence</b> available</li><li>Determine the <b>evidence collection requirement</b></li><li>Decide the <b>procedure</b> to securely collect evidence in a forensically sound way</li><li>Establish a <b>policy</b> to securely handle and store evidence</li><li>Make sure monitoring aims to <b>detect and prevent</b> important incidents</li><li>Make sure investigative <b>staff are capable</b> of handling and preserving evidence</li><li><b>Document</b> all activities and their impact</li><li>Ensure <b>authorized review</b> to support action on the incident</li></ol>
+<h3>Types of computer crimes</h3>
+<p>Identity theft, hacking, computer viruses, cyber stalking, drug trafficking, phishing/spoofing, wrongful programming, credit card fraud, online auction fraud, email bombing &amp; SPAM, theft of intellectual property, denial of service attack, debt elimination, web jacking, internet extortion, investment fraud, escrow services fraud, cyber defamation, software piracy, counterfeit cashier’s check, embezzlement.</p>
+<h3>Role of a forensics investigator</h3>
+<ol><li>Protects the victim’s computer from damage and viruses</li><li>Determines the extent of damage</li><li>Gathers evidence in a forensically sound manner</li><li>Analyses the evidence and protects it from damage</li><li>Prepares the analysis report</li><li>Presents acceptable evidence in court</li></ol>
+<h3>Why you should report cybercrime</h3>
+<ol><li>Companies may not want to share info because of the impact on their <b>business</b> and the <b>sensitivity of the data</b></li><li>Only by sharing with law enforcement and industry groups can criminals be <b>identified and prosecuted</b></li><li>New threats are identified, and attacks on <b>critical infrastructure</b> and the <b>economy</b> are prevented</li><li>Law enforcement’s ability to <b>identify coordinated threats</b> depends on the <b>volume of reporting</b></li></ol></section>
+
+<section class="note"><h2>Acquisition methods <span class="sl">slides 48–49</span></h2>
+<p><b>Two types of acquisition:</b> <mark>static acquisition</mark> and <mark>live acquisition</mark>.</p>
+<p><b>Four methods of data collection:</b></p>
+<ol><li>Disk-to-image file</li><li>Disk-to-disk</li><li>Logical disk-to-disk or disk-to-data file</li><li>Sparse data copy of a file or folder</li></ol>
+<p>The best method <b>depends on the circumstances</b> of the investigation.</p>
+<div class="tbl"><table><tr><th>Method</th><th>Points</th><th>Tools</th></tr>
+<tr><td>Disk-to-image file</td><td><b>Most common</b>, most flexible; can make more than one copy; copies are <b>bit-for-bit</b> replicas of the original drive</td><td>ProDiscover, EnCase, FTK, SMART, Sleuth Kit, X-Ways, iLookIX</td></tr>
+<tr><td>Disk-to-disk</td><td>Used <b>when disk-to-image is not possible</b>; tools can adjust the disk’s <b>geometry</b> configuration</td><td>EnCase, SafeBack, SnapCopy</td></tr></table></div></section>
+
+<section class="note"><h2>FTK Imager Lite <span class="sl">slides 50–56</span></h2>
+<p>FTK Imager is a <b>free</b> data preview and imaging tool. It acquires evidence in a forensically sound way by making copies <b>without changing the original</b>.</p>
+<ul><li><b>Create forensic images</b> – of local hard drives, CDs/DVDs, thumb drives, other USB devices</li><li><b>Preview data</b> – view contents of forensic images on a local machine or network drive</li><li><b>Evaluate evidence</b> – decide if deeper analysis with the full FTK Forensic Toolkit is needed</li></ul>
+<h3>Steps (from the figures)</h3>
+<ol><li>Main window: Evidence Tree, File List, Custom Content Sources (Fig 3-4)</li><li><b>Select Drive</b> – choose source drive, e.g. <code>\\.\PHYSICALDRIVE1</code> (USB) (Fig 3-5)</li><li><b>Select Image Type</b> – <b>Raw (dd)</b>, SMART, <b>E01</b>, AFF (Fig 3-6)</li><li><b>Evidence Item Information</b> – Case Number, Evidence Number, Unique Description, Examiner, Notes (Fig 3-7)</li><li><b>Select Image Destination</b> – destination folder, filename (without extension), Image Fragment Size (MB) e.g. 1500 (<b>0 = do not fragment</b>), Compression (<b>0 = none, 1 = fastest, 9 = smallest</b>), Use AD Encryption (Fig 3-8)</li><li><b>Creating Image</b> – shows source, destination, status “Image created successfully”, elapsed time, Image Summary button (Fig 3-9)</li></ol></section>
+
+<section class="note"><h2>Computer forensics lab <span class="sl">slides 57–65</span></h2>
+<p><b>Lab layout:</b> A – Equipment Closet, B – Evidence Locker, C – PC Workstation, D – Mac Workstation, E – Workbench.</p>
+<ul><li><b>Evidence locker</b> – locked, secure room/door to store evidence</li><li><b>Digital evidence</b> – computers stored on shelves with case labels</li><li><b>SIM card reader</b> (also Micro SD card reader)</li><li><b>USB-powered hard drive</b></li><li><b>Evidence bags</b> – have fields for case no., item, suspect, victim, date/time, and a <b>chain of custody</b> table (From / To / Date)</li><li><b>Lab sign-in sheet</b> – Date, Full Name (CAPS), Signature, Organization, Time In, Time Out, Approval Signature; plus Supervisor Signature and Date</li><li><b>ATM fake card slot overlay</b> – the back hides a <b>skimmer device</b> (circuit board + battery) that steals card data</li></ul></section>
+
+<section class="note"><h2>Summary <span class="sl">slide 66</span></h2>
+<ul><li>Several tools are available</li><li><b>Lossless compression</b> is acceptable</li><li>Plan your digital evidence contingencies (backup plans)</li><li>Make a copy of each acquisition</li><li><b>Write-blocking</b> devices or utilities must be used with GUI acquisition tools</li><li><b>Always validate</b> the acquisition</li><li>A Linux Live CD such as <b>SIFT, Kali Linux or Deft</b> gives many useful acquisition tools</li></ul>
+<p><b>References:</b> Darren Hayes (2020) <i>A Practical Guide to Digital Forensics Investigations</i>; Greg Gogolin (2021) <i>Digital Forensics Explained</i>; Nelson, Phillips &amp; Steuart (2018) <i>Guide to Computer Forensics and Investigations</i>, 6th ed.</p></section>
+</div>
+
+<!-- ===================== WEEK 5 ===================== -->
+<div id="p-w5" role="tabpanel" hidden>
+<div class="week-h">Week 5 · Processing Crime and Incident Scenes</div>
+
+<section class="note"><h2>Learning outcomes <span class="sl">slide 2</span></h2>
+<ul><li>Microsoft Windows (OS) forensics</li><li>Explain the rules for controlling digital evidence</li><li>Explain guidelines for processing law enforcement crime scenes</li><li>List the steps in preparing for an evidence search</li><li>Describe how to secure a computer incident or crime scene</li></ul></section>
+
+<section class="note"><h2>Windows forensics <span class="sl">slides 3–4</span></h2>
+<p><b>Microsoft Windows forensics</b> = analysing and extracting digital evidence from a Windows computer. It means <b>examining and recovering data, files and other digital artifacts</b> from Windows devices to find the <b>causes of incidents or crimes</b>.</p>
+<p><b>Why important:</b> it is used in <b>criminal investigations, cyber security incidents and incident response</b>. Investigators can find clues, identify perpetrators, and give evidence for legal proceedings.</p></section>
+
+<section class="note"><h2>OS resources: volatile vs non-volatile <span class="sl">slides 5–9</span></h2>
+<div class="tbl"><table><tr><th></th><th>Volatile information</th><th>Non-volatile information</th></tr>
+<tr><td>Meaning</td><td>Data <b>temporarily</b> stored in system memory (RAM). Memory stores data <b>electrically</b>, so if power fails, the data is <b>lost</b>.</td><td>Data that <b>stays</b> after the computer is switched off (hard disk, flash memory).</td></tr>
+<tr><td>Examples</td><td>System time, logged-on users, open files, network information, drives mapped to shared folders</td><td>File systems, registry settings, logs, devices, slack space, swap file, indexes, partitions; also recycle bin, documents, shortcut files, graphics files, executable files</td></tr>
+<tr><td>Storage examples</td><td>RAM stick</td><td>Floppy disk, compact disc, internal hard drive, external hard drive, flash drive, SD card</td></tr></table></div>
+<h3>How to capture memory (full memory dump)</h3>
+<ul><li><b>FTK Imager 4.5:</b> File menu → <b>Capture Memory…</b></li>
+<li><b>Windows setting:</b> (1) Control Panel → System → <b>Advanced system settings</b>, (2) Startup and Recovery → <b>Settings</b>, (3) under “Write debugging information” choose <b>Complete memory dump</b>. Dump file: <span class="path">%SystemRoot%\MEMORY.DMP</span>.</li>
+<li>This dump is normally created <b>only after a kernel crash / BSOD</b> (blue screen). After crash and reboot check <span class="path">C:\Windows\MEMORY.DMP</span> and <span class="path">C:\Windows\Minidump</span>.</li></ul></section>
+
+<section class="note"><h2>Registry information <span class="sl">slides 10–11</span></h2>
+<p>Registry info has a big impact on forensic analysis. Tools <b>reg</b> and <b>regedit</b> help get registry entries using important keys. Try <mark>regedit</mark> from RUN.</p>
+<p>Important keys: <mark>RunMRU (Most Recently Used)</mark>, startup objects, last accessed key, addresses in Internet Explorer, last saved directory in Internet Explorer.</p>
+<div class="tbl"><table><tr><th>#</th><th>Key</th><th>Stores</th><th>Path</th></tr>
+<tr><td>1</td><td><b>RunMRU</b></td><td>Commands typed in the Run dialog (Win + R), e.g. cmd, notepad, calc</td><td><span class="path">HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU</span></td></tr>
+<tr><td>2</td><td><b>Run</b></td><td>Programs that start automatically at user logon (current user), e.g. OneDrive, Teams</td><td><span class="path">HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run</span></td></tr>
+<tr><td>3</td><td><b>TypedURLs</b></td><td>URLs typed in the Internet Explorer address bar (<b>legacy</b>, may not exist on Windows 11 – IE retired)</td><td><span class="path">HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\TypedURLs</span></td></tr>
+<tr><td>4</td><td><b>Download Directory</b></td><td>Last download directory in IE (legacy). It is a <b>value</b> (REG_SZ), not a subkey</td><td><span class="path">HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer</span> → value <code>Download Directory</code></td></tr>
+<tr><td>5</td><td><b>ProfileList</b></td><td>User profile info using <b>Security Identifiers (SIDs)</b>; each subkey = one user profile (e.g. S-1-5-21-…)</td><td><span class="path">HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList</span></td></tr></table></div>
+<div class="tip">Only ProfileList is under <b>HKEY_LOCAL_MACHINE</b>. The other four are under <b>HKEY_CURRENT_USER</b>.</div></section>
+
+<section class="note"><h2>Data organization in Windows <span class="sl">slides 12–17</span></h2>
+<p>Five parts: Cluster, Partition, Master Boot Record (MBR), FAT32, NTFS.</p>
+<ul>
+<li><b>Cluster</b> – a <b>group of sectors</b>. Typically up to <b>32KB</b>. Clusters are a <b>logical</b> representation of sectors. (Disk structure: tracks, sectors, clusters.)</li>
+<li><b>Partition</b> – a <b>logical division</b> of physical storage so the OS can use each part as a separate unit. Smart users may <b>hide data</b> in hidden or temporarily deleted partitions.</li>
+<li><b>MBR disk</b> – MBR holds the <b>boot code and partition table</b>. Supports up to <b>4 primary partitions</b>; one can be an <b>extended partition</b> that holds many <b>logical drives</b> (e.g. D: NTFS, E: FAT32, F: exFAT). Example: Partition 1 primary DOS/Windows (NTFS), Partition 2 non-DOS (macOS APFS/HFS+), Partition 3 extended DOS, Partition 4 non-DOS (Linux ext4).</li>
+<li><b>Master Boot Record (MBR)</b> – every OS starts by reading a boot record at the <b>first location</b> of the disk. The partition table entry includes: boot indicator, starting head/sector/cylinder, system ID, ending head/sector/cylinder, relative sectors, total sectors. MBR ends with the signature <code>55 AA</code>. Disk layout: MBR (bootloader + partition table) → boot sector → partitions.</li>
+<li><b>FAT32</b> – FAT = <mark>File Allocation Table</mark>; a structure that keeps <mark>vital metadata</mark> of files. FAT uses fixed (predefined) ways to store files, which forensic tools use to <b>rebuild (reconstruct) files</b>.</li>
+<li><b>NTFS</b> – newer Microsoft standard, more advanced allocation table structure, keeps data compatible for other OSs. <b>Currently used</b> with Windows.</li>
+</ul></section>
+
+<section class="note"><h2>Identifying digital evidence <span class="sl">slides 18–19</span></h2>
+<ul><li>Digital evidence = <b>any information stored or transmitted in digital form</b></li><li><b>U.S. courts accept digital evidence as physical evidence</b> – digital data is treated as a <b>tangible object</b></li><li>Groups such as <b>SWGDE</b> (Scientific Working Group on Digital Evidence) set standards for recovering, preserving and examining digital evidence</li></ul>
+<h3>General tasks of investigators</h3>
+<ol><li><b>Identify</b> digital information or artifacts that can be evidence</li><li><b>Collect, preserve and document</b> evidence</li><li><b>Analyse, identify and organize</b> evidence</li><li><b>Rebuild</b> evidence or repeat a situation to check the results can be <b>reproduced reliably</b></li></ol>
+<p>Collecting devices and processing a scene must be done <b>systematically</b>.</p></section>
+
+<section class="note"><h2>Rules of evidence <span class="sl">slides 20–23</span></h2>
+<ul>
+<li><b>Consistent practices</b> help verify your work and increase your credibility.</li>
+<li>Follow your <b>state’s rules of evidence</b> or the <b>Federal Rules of Evidence (FRE)</b>.</li>
+<li>Evidence admitted in a <b>criminal</b> case can be used in a <b>civil</b> suit, and the other way round.</li>
+<li>Keep up to date with the latest rulings on collecting, processing, storing and admitting digital evidence.</li>
+<li>Digital evidence is <b>changed more easily</b> than other physical evidence. The <b>only way to detect changes</b> is to <b>compare the original data with a duplicate</b>.</li>
+<li>Most federal courts treat computer records as <b>hearsay</b> = <b>secondhand or indirect</b> evidence.</li>
+<li>Digital records are usually admissible if they qualify as a <b>business record</b>.</li>
+<li>Computer records are divided into: <b>computer-generated records</b> and <b>computer-stored records</b>.</li>
+<li>Records must be shown to be <b>authentic and trustworthy</b> to be admitted.</li>
+<li><b>Computer-generated records</b> are authentic if the <b>program that made the output works correctly</b>. They are usually an <b>exception to the hearsay rule</b>.</li>
+<li>Following proper <b>evidence control</b> steps helps make sure the evidence is authentic.</li>
+</ul></section>
+
+<section class="note"><h2>Private-sector incident scenes <span class="sl">slides 24–26</span></h2>
+<ul>
+<li>Private-sector organizations = <b>businesses and government agencies not involved in law enforcement</b>.</li>
+<li><b>NGOs</b> must follow state public disclosure laws and the federal <b>Freedom of Information Act (FOIA)</b>, making some documents public records. FOIA lets citizens request copies of public documents made by federal agencies.</li>
+<li>Special category: <b>ISPs</b> and communication companies. ISPs can investigate abuse by their <b>employees, but not customers</b> – except activities that create an <b>emergency</b>.</li>
+<li>Corporate incident scenes are <b>much easier</b> to investigate and control than criminal scenes; the scene is often a <b>workplace</b>.</li>
+<li>Companies should show a <b>warning banner</b> and publish a <b>policy</b> saying they can inspect computing assets at will.</li>
+<li>Corporate investigators should know <b>when</b> they can examine an employee’s computer; every organization needs a <b>well-defined process</b> for starting an investigation.</li>
+</ul></section>
+
+<section class="note"><h2>Law enforcement crime scenes &amp; warrants <span class="sl">slides 27–29</span></h2>
+<ul><li>Know the criminal rules of <b>search and seizure</b> and how a <b>search warrant</b> works.</li><li>Police may search for and seize evidence only with <mark>probable cause</mark> – the standard for whether an officer can arrest, search a person/property, or get a warrant.</li></ul>
+<h3>Terms used in warrants</h3>
+<ul><li><b>Innocent information</b> – unrelated information often mixed with the evidence. Judges often add a <b>limiting phrase</b> to the warrant so police can <b>separate innocent information from evidence</b>.</li>
+<li><b>Plain view doctrine</b> – objects in plain view of an officer who has a right to be there can be <b>seized without a warrant</b> and used as evidence. <b>Three criteria:</b>
+<ol><li>The officer is where he/she has a <b>legal right</b> to be</li><li>Ordinary senses are <b>not enhanced by advanced technology</b></li><li>The discovery is <b>by chance</b></li></ol></li></ul></section>
+
+<section class="note"><h2>Preparing for an evidence search <span class="sl">slides 30–39</span></h2>
+<ol>
+<li><b>Identify the nature of the case</b> – including whether it is <b>private or public sector</b>. The nature of the case decides how you proceed and what resources you need.</li>
+<li><b>Identify the type of OS or digital device</b> – hard for law enforcement because the scene isn’t controlled. If you can, estimate the drive size, how many devices to process, and which OSs and hardware are involved.</li>
+<li><b>Determine whether you can seize computers and devices</b> – law enforcement needs a <b>warrant</b> to remove computers to a lab. If removing them would <b>irreparably harm a business</b>, they should <b>not be taken offsite</b>.</li>
+<li><b>Get a detailed description of the location</b> – find potential hazards, work with your <b>HAZMAT</b> team. HAZMAT guidelines: put the target drive in a special HAZMAT bag, technician decontaminates the bag, check for <b>high temperatures</b>.</li>
+<li><b>Use additional technical expertise</b> – specialists in OSs, <b>RAID servers</b> (redundant array of independent disks), databases. Finding the right person can be hard.</li>
+<li><b>Determine the tools you need</b> – <b>initial-response field kit</b> (lightweight, easy to carry) and <b>extensive-response field kit</b> (all tools you can afford). At the scene, take out only what you need.</li>
+<li><b>Prepare the investigation team</b> – review facts, plans and objectives first. Goal of scene processing: <b>collect and secure digital evidence</b>. Digital evidence is <b>volatile</b>; a slow response can lose it.</li>
+</ol>
+<h3>Initial-response field kit (Table 4-1)</h3>
+<p>1 small computer toolkit, 1 large-capacity drive, 1 IDE ribbon cable (ATA-33 or ATA-100), 1 SATA cables, 1 forensic boot media with acquisition utility, 1 laptop IDE 40- to 44-pin adapter, 1 laptop or tablet, 1 FireWire or USB dual write-protect external bay, 1 flashlight, 1 digital camera (or 35mm camera), <b>10 evidence log forms</b>, 1 notebook or dictation recorder, <b>10 computer evidence bags (antistatic)</b>, <b>20 evidence labels, tape and tags</b>, 1 permanent ink marker, 10 external USB devices or portable hard drive. (Figure 4-4 shows: digital forensics kit, laptop, digital camera, flashlight.)</p>
+<h3>Extensive-response field kit (Table 4-2)</h3>
+<p>Assorted technical manuals, 1 initial-response field kit, laptop/tablet with cables, 2 electrical power strips, hand tools (<b>bolt cutters, pry bar, hacksaw</b>), leather and disposable latex gloves, hand truck and luggage cart, 10 large garbage bags and cardboard boxes with tape, rubber bands, magnifying glass, ream of printer paper, small brush for dust, 10 USB drives, <b>2 external hard drives (1 TB or larger)</b>, converter cables, 5 extra hard/flash drives for acquisition.</p></section>
+
+<section class="note"><h2>Securing the scene &amp; acquiring evidence <span class="sl">slides 40–43</span></h2>
+<h3>Securing a computer incident or crime scene – goals</h3>
+<ul><li>Preserve the evidence</li><li>Keep information confidential</li><li>Define a secure perimeter – use <b>yellow barrier tape</b></li><li>Legal authority for a corporate incident includes <b>trespassing violations</b></li></ul>
+<p><b>AFIS</b> (Automated Fingerprint Identification System) – a computer system that identifies fingerprints, connected to a central database; used to identify suspects and check thousands of fingerprints at high speed.</p>
+<h3>Preparing to acquire digital evidence – questions to ask your supervisor</h3>
+<ol><li>Do you need to take the entire computer and all peripherals and media nearby?</li><li>How will you protect the computer and media while transporting them to the lab?</li><li>Is the computer powered on when you arrive?</li><li>Is the suspect near the computer?</li><li>Could the suspect have damaged or destroyed the computer, peripherals or media?</li><li>Will you have to separate the suspect from the computer?</li></ol>
+<h3>Technical advisor – responsibilities</h3>
+<ul><li>Know all aspects of the seized system</li><li>Direct the investigator handling sensitive material</li><li>Help secure the scene</li><li>Help document the planning strategy</li><li>Conduct ad hoc trainings</li><li>Document activities</li><li>Help conduct the search and seizure</li></ul></section>
+
+<section class="note"><h2>Summary <span class="sl">slides 44–45</span></h2>
+<ul><li>Windows forensics = examining and analysing evidence from Windows: <b>acquiring, preserving, examining and interpreting</b> data from hard drives, memory dumps and network traffic.</li><li>Digital evidence is anything stored or transmitted on <b>electronic or optical media</b>.</li><li>In the private sector, the scene is often a <b>contained and controlled</b> area.</li><li>Companies should publish a right-to-inspect policy.</li><li><b>Private and public sectors follow the same</b> computing investigation rules.</li><li>Guard against physically destroying or contaminating evidence.</li></ul>
+<p><b>References:</b> lecturer’s expertise, research papers, Nelson, Phillips &amp; Steuart (2018) <i>Guide to Computer Forensics and Investigations</i>, 6th ed.</p></section>
+</div>
+
+<!-- ===================== QUIZ ===================== -->
+<div id="p-quiz" role="tabpanel" hidden>
+  <div class="qbar">
+    <div class="score" id="score">Score 0 / 0 · 0 left</div>
+    <div class="filters">
+      <button id="f-all" data-f="all" aria-pressed="true">All</button>
+      <button id="f-3" data-f="3" aria-pressed="false">Week 3</button>
+      <button id="f-5" data-f="5" aria-pressed="false">Week 5</button>
+      <button class="reset" id="reset">Reset</button>
+    </div>
+  </div>
+  <div id="qlist"></div>
+</div>
+</div>
+
+<script>
+const Q = [
+// ---------- WEEK 3 ----------
+[3,"According to the 'Elements of a Crime' diagram, which element sits in the centre and links the others?",["Victim","Crime scene","Evidence","Suspect / Criminal"],2,"Evidence is in the centre. It connects the crime scene, the suspect/criminal and the victim."],
+[3,"Which is NOT one of the elements of a digital crime shown in the slide?",["Crime scene","Witness","Victim","Suspect / Criminal"],1,"The four elements are Evidence, Crime scene, Suspect/Criminal and Victim. Witness is not listed."],
+[3,"A digital crime scene is best defined as:",["The physical room where the computer was found","The virtual or electronic environment where a cybercrime or digital incident happened","The police lab where evidence is stored","The court where the case is presented"],1,"A digital crime scene is the virtual or electronic environment where the cybercrime occurred."],
+[3,"Which characteristic says investigators must work quickly because digital data can change fast?",["Virtual nature","Dynamic environment","Legal considerations","Multidisciplinary approach"],1,"Dynamic environment: data changes rapidly, so evidence must be preserved before it is altered."],
+[3,"'Files, logs, system configurations, network traffic and other digital traces' describes which characteristic?",["Data and artifacts","Specialized tools","Remote investigations","Virtual nature"],0,"Data and artifacts = the electronic traces criminals leave behind that can be evidence."],
+[3,"Combining computer science, cybersecurity, law enforcement and legal procedures is called:",["Remote investigation","Dynamic environment","Multidisciplinary approach","Chain of custody"],2,"Multidisciplinary approach = many fields of expertise working together."],
+[3,"Which characteristic mentions chain of custody and admissibility in court?",["Specialized tools","Legal considerations","Data and artifacts","Virtual nature"],1,"Legal considerations: evidence must meet legal standards so the court accepts it."],
+[3,"How many key characteristics of a digital crime scene are listed in the slides?",["4","5","6","7"],3,"Seven: Virtual nature, Data & artifacts, Dynamic environment, Specialized tools, Remote investigations, Multidisciplinary approach, Legal considerations."],
+[3,"In digital forensics, a 'victim' is:",["Only a person who lost money","An entity or individual (person/organization) harmed by a cybercrime or digital incident","The investigator who handles the case","Only a government agency"],1,"A victim can be a person or an organization that suffered harm, damage or compromise."],
+[3,"Which is NOT listed as a form of harm to a victim?",["Financial losses","Reputation damage","Disruption of services","Hardware upgrade"],3,"Listed harms: unauthorized access to sensitive data, financial losses, service disruption, reputation damage."],
+[3,"Which is NOT one of the 5 goals of a digital forensic investigation?",["When was the crime committed?","Who is the culprit?","How much will the investigation cost?","Where can it be found?"],2,"The 5 goals are What, Where, When, Who and How. Cost is not one of them."],
+[3,"Which type of digital forensics is described as the 'most primitive'?",["Cloud forensics","Computer forensics","Mobile forensics","Memory forensics"],1,"Computer forensics is the oldest type, from the early days of computers."],
+[3,"Analysing network events, intrusions and data packets to detect attacks is:",["Network forensics","Multimedia forensics","Memory forensics","Computer forensics"],0,"Network forensics studies traffic and packets to find network attacks."],
+[3,"Investigating a RAM dump to find chat history and clipboard history is:",["Cloud forensics","Mobile forensics","Memory forensics","Multimedia forensics"],2,"Memory forensics looks at RAM (volatile memory)."],
+[3,"Investigating images, audio and video recovered at a crime scene is:",["Multimedia forensics","Network forensics","Cloud forensics","Computer forensics"],0,"Multimedia forensics = images, audio and video files."],
+[3,"How many classifications of digital forensics are listed on slide 10?",["4","5","6","7"],2,"Six: Computer, Network, Multimedia, Mobile, Memory, Cloud."],
+[3,"Which of these is NOT shown as digital evidence in the slide 14 diagram?",["SIM cards","Browser history","Fingerprint on paper","Logs, events"],2,"Diagram items: laptops, emails, multimedia, SIM cards, HDD/SSD, USB, PDAs/tablets, logs/events, browser history."],
+[3,"Which statement about metadata is correct?",["It is usually raw and unprocessed","It is always processed and describes the data","It is the content written in a document","It is stored only in RAM"],1,"Metadata is always processed. Data is the raw one."],
+[3,"File type, file size and file name are examples of:",["Data","Metadata","Volatile data","Hash values"],1,"These describe the file, so they are metadata. The text inside the file is data."],
+[3,"Which is NOT one of the 3 principles of digital forensics?",["Securing the crime scene","Limiting evidence interaction","Maintaining chain of custody","Publishing the evidence online"],3,"The three principles: secure the scene, limit evidence interaction, maintain chain of custody."],
+[3,"Disconnecting wireless connections and documenting all processes belongs to which principle?",["Securing the crime scene","Maintaining chain of custody","Limiting evidence interaction","Presentation"],0,"Securing the scene: stop all access, document processes and connections, disconnect wireless."],
+[3,"A record of the order evidence was collected, timestamps and who handled it is the:",["Warning banner","Chain of custody","Partition table","Hash value"],1,"Chain of custody tracks who touched the evidence and when."],
+[3,"What is the FIRST step of the digital forensic process?",["Preservation","Collection","Identification","Examination"],2,"Identification: find the purpose and recognise possible evidence."],
+[3,"In which step is evidence packed in a Faraday bag?",["Collection","Analysis","Documentation","Interpretation"],0,"Collection: acquire evidence without harm and pack it in a Faraday bag."],
+[3,"Which step is a precursor (comes right before) analysis?",["Interpretation","Examination","Presentation","Preservation"],1,"Order: Identification, Preservation, Collection, Examination, Analysis..."],
+[3,"Joining pieces of evidence together and retrieving deleted files happens in:",["Identification","Analysis","Documentation","Collection"],1,"Analysis is the most crucial step: joining bits and pieces, retrieving deleted files."],
+[3,"Which step is mandatory only when asked for cross-examination and must use very simple words?",["Documentation","Interpretation","Presentation","Examination"],2,"Presentation: explain findings simply for normal people in court."],
+[3,"What is the 7th step of the 8-step forensic process?",["Interpretation","Presentation","Documentation","Analysis"],2,"...Analysis (5), Interpretation (6), Documentation (7), Presentation (8)."],
+[3,"Which tool type has paid licences and protected source code?",["Open source","Proprietary","Self-created","Freeware script"],1,"Proprietary tools are commercial, paid, with protected source code, plus support and updates."],
+[3,"A Python script written by an investigator to automate a task is a:",["Proprietary tool","Open-source tool","Self-created tool","Live CD"],2,"Self-created tools are built in-house for specific needs."],
+[3,"Autopsy was developed by:",["AccessData","EC-Council","The Sleuth Kit lab","BlackBag Technologies"],2,"Autopsy is the GUI platform by the Sleuth Kit lab."],
+[3,"Which tool is proprietary and gives an end-to-end solution from forensic acquisition to reporting?",["Wireshark","EnCase","Autopsy","Plaso"],1,"EnCase covers acquisition through reporting. FTK is the other proprietary example."],
+[3,"Which tool is described as 'court-cited, built for speed, stability and ease of use'?",["AccessData FTK","Volatility","GRR","ExifTool"],0,"AccessData FTK is the court-cited proprietary platform."],
+[3,"Which Autopsy feature lets users add new functions through plugins?",["Timeline analysis","Modular architecture","Keyword searching","Registry analysis"],1,"Modular architecture = add plugins and modules."],
+[3,"Which file system is NOT in Autopsy's supported list on the slide?",["NTFS","HFS+","ext2/3/4","Btrfs"],3,"Listed: NTFS, FAT, exFAT, HFS+, ext2/3/4. Btrfs is a Linux file system listed later, not under Autopsy."],
+[3,"Which Autopsy feature helps understand WHEN file activities happened?",["Timeline analysis","Web artifacts","Email analysis","Keyword searching"],0,"Timeline analysis shows the timing of file activities."],
+[3,"Which open-source tool is an advanced MEMORY forensics framework?",["Plaso","Volatility","CAINE","Wireshark"],1,"Volatility analyses memory (RAM) dumps."],
+[3,"Which open-source tool is a live forensics tool for REMOTE incident management?",["GRR","DEFT","TSK","ExifTool"],0,"GRR = live, remote incident response."],
+[3,"Which tool extracts TIMELINES from various sources?",["Plaso","CAINE","Volatility","Wireshark"],0,"Plaso builds timelines."],
+[3,"ExifTool is used for:",["Capturing network packets","Reading, writing and changing metadata","Memory analysis","Disk imaging"],1,"ExifTool works with metadata (like EXIF in photos)."],
+[3,"The Sleuth Kit (TSK) is:",["A library for analysing disk images and recovering data","A network analyzer","A Linux live CD only","A cloud forensics service"],0,"TSK analyses disk images and recovers data."],
+[3,"Which is a Windows file system designed for data centres, focusing on resilience and scalability?",["FAT","exFAT","NTFS","ReFS"],3,"ReFS = Resilient File System, for enterprise and data centres."],
+[3,"Which file system is designed for flash storage like USB drives and SD cards?",["exFAT","NTFS","ReFS","HFS+"],0,"exFAT supports bigger files than FAT32 without NTFS overhead; good for flash drives."],
+[3,"Which is the standard Windows file system with file permissions and encryption?",["FAT","NTFS","APFS","XFS"],1,"NTFS supports large volumes, permissions and encryption."],
+[3,"Which is NOT a key Windows forensic location listed?",["Recycle Bin","Prefetch files","Time Machine backups","Event Logs"],2,"Time Machine is a Mac location. Windows: Recycle Bin, Registry, Event Logs, Prefetch."],
+[3,"Get-Acl is a PowerShell command that retrieves:",["The file hash","The Access Control List (who can access and what permissions)","The registry RunMRU","The memory dump"],1,"Get-Acl shows the ACL: owner and access rights like Read, Write, Execute, FullControl."],
+[3,"Which are Mac file systems?",["HFS+ and APFS","Ext4 and XFS","NTFS and ReFS","FAT and exFAT"],0,"Mac uses HFS+ and APFS."],
+[3,"Spotlight database, Trash and plist files are key locations in:",["Linux forensics","Windows forensics","Mac forensics","Cloud forensics"],2,"These are macOS artifacts."],
+[3,"Which tool is listed for Mac forensics?",["BlackBag Technologies' MacQuisition","GRR","SafeBack","Plaso"],0,"Mac tools: MacQuisition, Cellebrite, Sleuth Kit."],
+[3,"Which are Linux file systems listed in the slides?",["Ext2/3/4, XFS, Btrfs","HFS+, APFS","FAT, ReFS","NTFS, exFAT"],0,"Linux: Ext2/3/4, XFS, Btrfs."],
+[3,"Key Linux forensic locations include:",["/var/log and /home","C:\\Windows\\Prefetch","Spotlight database","Recycle Bin"],0,"/var/log holds logs; /home holds user files."],
+[3,"Which Python library creates a SHA-256 hash to check data integrity?",["Pillow","scapy","hashlib","os"],2,"hashlib.sha256(...).hexdigest() gives the hash."],
+[3,"In the hashlib example, the file is opened in which mode?",["'r'","'w'","'rb' (read binary)","'a'"],2,"'rb' reads the file as raw bytes, which is needed for hashing."],
+[3,"Which Python library is used to extract EXIF metadata from images?",["Pillow (PIL)","hashlib","scapy","Volatility"],0,"Pillow reads EXIF: camera model, date taken, GPS coordinates."],
+[3,"In the scapy example sniff(prn=packet_callback, count=10), what happens?",["It blocks 10 websites","It captures and prints the first 10 packets","It hashes 10 files","It deletes 10 logs"],1,"count=10 means only the first 10 packets are captured."],
+[3,"CHFI certification is offered by:",["AccessData","EC-Council","SWGDE","Microsoft"],1,"CHFI = Computer Hacking Forensic Investigator, by EC-Council."],
+[3,"Which is NOT one of the 4 aspects of organizational security?",["IT security","Physical security","Financial security","Social media security"],3,"The four: IT, Physical, Financial, Legal security."],
+[3,"Phishing attacks, botnets and credit card fraud fall under which aspect of organizational security?",["Legal security","Financial security","Physical security","IT security"],1,"These belong to Financial security."],
+[3,"Defamation, copyright information and national security fall under:",["Legal security","IT security","Physical security","Financial security"],0,"These are part of Legal security."],
+[3,"Which is a listed NEED for computer forensics?",["To track down perpetrators from different parts of the world","To speed up the internet","To design new hardware","To replace antivirus software"],0,"Needs: integrity, prove attacker's actions in court, track down perpetrators, protect money and time."],
+[3,"Which is a BENEFIT of forensics readiness?",["It removes the need for evidence","Structured evidence storage reduces cost and time of internal investigations","It stops all cyberattacks","It removes the need for law enforcement"],1,"Forensic readiness makes investigations cheaper and faster."],
+[3,"What is the FIRST step in forensics readiness planning?",["Document all activities","Define the business states that need digital evidence","Ensure authorized review","Establish a policy for storing evidence"],1,"Planning starts by defining which business states need digital evidence."],
+[3,"Which is NOT a role of a forensics investigator?",["Determines the extent of damage","Prepares the analysis report","Presents acceptable evidence in court","Decides the final punishment of the suspect"],3,"The judge/court decides punishment, not the investigator."],
+[3,"Why are companies sometimes reluctant to report cybercrime?",["Because of the impact on business and sensitivity of the data","Because reporting is illegal","Because police never respond","Because evidence is always lost"],0,"Companies worry about business impact and sensitive data."],
+[3,"Law enforcement's ability to identify coordinated threats is directly tied to:",["The size of the company","The volume of reporting","The type of OS","The number of investigators"],1,"More reports = better ability to spot coordinated threats."],
+[3,"The two types of acquisitions are:",["Static and live","Local and global","Logical and illegal","Primary and extended"],0,"Static acquisition (system off) and live acquisition (system running)."],
+[3,"Which is the MOST common acquisition method with the most flexibility?",["Disk-to-disk","Disk-to-image file","Sparse data copy","Logical disk-to-data file"],1,"Disk-to-image makes bit-for-bit copies and you can make more than one."],
+[3,"When is disk-to-disk copy used?",["Always, as the first choice","When disk-to-image copy is not possible","Only for cloud data","Only for RAM"],1,"Disk-to-disk is the backup method; tools can adjust disk geometry."],
+[3,"Which tools are listed for disk-to-disk copying?",["EnCase, SafeBack, SnapCopy","Wireshark, Plaso, GRR","Pillow, hashlib, scapy","CAINE, DEFT, Kali"],0,"Disk-to-disk tools: EnCase, SafeBack, SnapCopy."],
+[3,"Copying only a specific file or folder is called:",["Disk-to-image","Sparse data copy of a file or folder","Disk-to-disk","Full memory dump"],1,"A sparse copy collects only certain files/folders."],
+[3,"FTK Imager is:",["A paid full analysis suite","A free data preview and imaging tool","A network sniffer","A Linux distribution"],1,"FTK Imager is free; it creates forensic images without changing the original."],
+[3,"Which image type is NOT an option in FTK Imager's 'Select Image Type' box?",["Raw (dd)","E01","AFF","ISO"],3,"Options: Raw (dd), SMART, E01, AFF."],
+[3,"In FTK Imager, setting Image Fragment Size to 0 means:",["Maximum compression","Do not fragment","Fastest speed","Encrypt the image"],1,"0 = do not fragment (one single file)."],
+[3,"In FTK Imager compression settings, 9 means:",["None","Fastest","Smallest","Encrypted"],2,"0 = none, 1 = fastest, 9 = smallest."],
+[3,"Which field is part of FTK Imager's 'Evidence Item Information'?",["Examiner","Suspect password","IP address","Warrant number"],0,"Fields: Case Number, Evidence Number, Unique Description, Examiner, Notes."],
+[3,"In the forensics lab layout, what is item B?",["Equipment Closet","Evidence Locker","Mac Workstation","Workbench"],1,"A Equipment Closet, B Evidence Locker, C PC, D Mac, E Workbench."],
+[3,"The ATM fake card slot overlay shown in the lab slides hides a:",["Faraday cage","Skimmer device","Write blocker","SIM card reader"],1,"The back of the overlay has a skimmer (circuit + battery) to steal card data."],
+[3,"According to the Week 3 summary, which must be used with GUI acquisition tools?",["Write-blocking devices or utilities","Lossy compression","Faraday cage","Cloud backup"],0,"Write-blockers stop the tool from changing the original evidence."],
+[3,"According to the summary, which type of compression is acceptable?",["Lossy","Lossless","Any compression","No compression ever"],1,"Lossless keeps every bit, so evidence is not changed."],
+[3,"Which Linux Live CDs are named in the summary for acquisition?",["SIFT, Kali Linux, Deft","Ubuntu, Fedora, Mint","Windows PE, DOS","macOS Recovery"],0,"SIFT, Kali Linux or Deft provide many forensic tools."],
+// ---------- WEEK 5 ----------
+[5,"Microsoft Windows forensics is:",["Repairing Windows errors","Analysing and extracting digital evidence from a Windows-based computer","Installing Windows updates","Writing Windows drivers"],1,"It examines and recovers data and artifacts from Windows to find causes of incidents or crimes."],
+[5,"Windows forensics plays a crucial role in which scenarios?",["Criminal investigations, cyber security incidents and incident response","Only software development","Only hardware repair","Only video editing"],0,"These three are named on the 'Importance' slide."],
+[5,"Volatile information is lost when:",["The file is renamed","The system's power supply fails","The disk is defragmented","The user logs in"],1,"Memory stores data electrically, so power loss erases it."],
+[5,"Which is an example of VOLATILE information?",["Registry settings","Logged-on users","Recycle Bin","Partitions"],1,"Volatile: system time, logged users, open files, network info, mapped drives."],
+[5,"Which is an example of NON-volatile information?",["Open files","System time","Slack space","Network connections"],2,"Slack space is on disk, so it stays after shutdown."],
+[5,"In FTK Imager, which File menu option creates a memory dump?",["Create Disk Image","Capture Memory","Verify Drive/Image","Export File Hash List"],1,"File → Capture Memory captures RAM."],
+[5,"In Windows Startup and Recovery settings, which option creates a full memory dump?",["Small memory dump","Complete memory dump","Automatic restart","Overwrite any existing file"],1,"Choose 'Complete memory dump' under Write debugging information."],
+[5,"A Windows complete memory dump is normally created only after:",["Every login","A kernel crash / BSOD","Every shutdown","Installing an app"],1,"It is made after a crash (Blue Screen of Death)."],
+[5,"Where should you check for the memory dump after a crash and reboot?",["C:\\Windows\\MEMORY.DMP","C:\\Users\\Desktop","/var/log","C:\\Program Files"],0,"Also check C:\\Windows\\Minidump."],
+[5,"Which tools help get registry entries?",["reg and regedit","ping and tracert","dd and grep","Get-Acl and sniff"],0,"reg (command line) and regedit (GUI)."],
+[5,"What does MRU in RunMRU stand for?",["Most Recently Used","Memory Record Unit","Main Registry User","Master Run Utility"],0,"RunMRU stores the most recently used Run (Win+R) commands."],
+[5,"Which registry key stores commands typed in the Run dialog (Win + R)?",["Run","RunMRU","TypedURLs","ProfileList"],1,"RunMRU = history of Run commands like cmd, notepad, calc."],
+[5,"Which registry key stores programs that start automatically at user logon?",["RunMRU","Run","ProfileList","TypedURLs"],1,"…\\CurrentVersion\\Run = startup programs for the current user."],
+[5,"Which registry key stores URLs typed in the Internet Explorer address bar?",["TypedURLs","RunMRU","Download Directory","ProfileList"],0,"TypedURLs is a legacy key; may not exist on Windows 11."],
+[5,"Which registry location stores user SIDs (Security Identifiers)?",["HKCU\\...\\Run","HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList","HKCU\\...\\Internet Explorer\\TypedURLs","HKCU\\...\\Explorer\\RunMRU"],1,"ProfileList is under HKEY_LOCAL_MACHINE; each subkey is one user profile."],
+[5,"'Download Directory' in the Internet Explorer key is:",["A subkey","A value (REG_SZ), not a subkey","A SID","A partition"],1,"Look in the right pane for the value named Download Directory."],
+[5,"Which root hive holds the RunMRU key?",["HKEY_LOCAL_MACHINE","HKEY_CURRENT_USER","HKEY_CLASSES_ROOT","HKEY_USERS"],1,"Path: HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\RunMRU."],
+[5,"Which is NOT one of the data organization parts in Windows listed in the slides?",["Cluster","Partition","MBR","Inode"],3,"Listed: Cluster, Partition, MBR, FAT32, NTFS. Inode is a Linux concept."],
+[5,"A cluster is:",["A group of sectors","A group of partitions","A type of RAM","A registry key"],0,"Clusters are groups of sectors, typically up to 32KB, a logical representation."],
+[5,"Typical cluster size mentioned in the slide is:",["512 bytes","4 MB","32 KB","1 GB"],2,"The slide says clusters can typically be 32KB."],
+[5,"A partition is:",["A physical cable","A logical division of the physical storage","A memory dump","A type of malware"],1,"Partitions let the OS use each part as a separate unit."],
+[5,"Why are partitions important in forensics?",["Smart users can hide data in hidden or temporarily deleted partitions","They always contain passwords","They store RAM","They cannot be analysed"],0,"Investigators check for hidden or deleted partitions."],
+[5,"In an MBR disk, how many primary partition entries are allowed?",["2","4","8","Unlimited"],1,"Up to 4 primary entries; one can be extended to hold more logical drives."],
+[5,"To create more volumes on an MBR disk, one primary entry can be used as a/an:",["Logical drive","Extended partition","Boot sector","Cluster"],1,"The extended partition is a container for many logical drives."],
+[5,"The Master Boot Record contains:",["Boot code and partition table","User documents","Registry hives","Memory dump"],0,"MBR = boot code + partition table, at the first location of the disk."],
+[5,"Which value marks the end of the MBR in the hex view?",["FF FF","55 AA","00 00","80 20"],1,"55 AA is the boot signature at the end of the MBR."],
+[5,"FAT stands for:",["File Access Tool","File Allocation Table","Fast Address Table","Forensic Analysis Tool"],1,"FAT keeps vital metadata of files."],
+[5,"Why is FAT useful to forensic tools?",["Its predefined storage mechanisms help tools reconstruct files","It encrypts all files","It deletes logs","It blocks malware"],0,"Tools use FAT's fixed structure to rebuild files."],
+[5,"Which file system is currently used with Windows OS?",["FAT12","NTFS","HFS+","ext4"],1,"NTFS is the current standard."],
+[5,"How do U.S. courts treat digital evidence?",["As hearsay that is never accepted","As physical evidence; digital data is a tangible object","Only as opinion","Only in civil cases"],1,"Courts accept digital evidence as physical evidence."],
+[5,"SWGDE stands for:",["Scientific Working Group on Digital Evidence","Secure Windows Group for Data Encryption","State Warrant Guide for Digital Exams","Software Working Group on Disk Engines"],0,"SWGDE sets standards for recovering, preserving and examining digital evidence."],
+[5,"Which is a general task of investigators working with digital evidence?",["Rebuild evidence to check results can be reproduced reliably","Delete unrelated files from the suspect's PC","Change timestamps to match the timeline","Share evidence on social media"],0,"Tasks: identify; collect, preserve, document; analyse, identify, organize; rebuild/repeat."],
+[5,"Evidence admitted in a criminal case:",["Can never be used again","Can be used in a civil suit, and vice versa","Can only be used in federal court","Must be destroyed"],1,"Criminal and civil cases can share admitted evidence."],
+[5,"What is the ONLY way to detect changes to digital evidence?",["Look at the file icon","Compare the original data with a duplicate","Ask the suspect","Restart the computer"],1,"Comparing original and duplicate (e.g. with hashes) shows changes."],
+[5,"Hearsay is:",["Direct eyewitness evidence","Secondhand or indirect evidence","A type of file system","A warrant"],1,"Most federal courts treat computer records as hearsay."],
+[5,"Digital records are generally admissible if they qualify as a:",["Business record","Personal diary","Draft document","Social media post"],0,"Business records are an accepted category."],
+[5,"Computer records are usually divided into:",["Computer-generated and computer-stored records","Local and cloud records","Primary and extended records","Volatile and static records"],0,"Two kinds: generated by the computer, and stored by people on the computer."],
+[5,"Computer-generated records are considered authentic if:",["The suspect agrees","The program that created the output is functioning correctly","They are printed","They are encrypted"],1,"They are also usually an exception to the hearsay rule."],
+[5,"Private-sector organizations include:",["Only police departments","Businesses and government agencies not involved in law enforcement","Only courts","Only ISPs' customers"],1,"Private sector = businesses and non-law-enforcement agencies."],
+[5,"FOIA allows citizens to:",["Search any computer","Request copies of public documents created by federal agencies","Arrest suspects","Access private emails"],1,"Freedom of Information Act."],
+[5,"ISPs can investigate computer abuse committed by:",["Their customers anytime","Their employees, but not customers (except emergencies)","Anyone on the internet","Only government staff"],1,"Customers are off-limits except in emergency situations."],
+[5,"Why is a corporate incident scene easier to control than a criminal scene?",["It is often a workplace, a contained and controlled area","There is never any evidence","Police are always present","No laws apply"],0,"The private-sector scene is usually the company's own workplace."],
+[5,"Companies should display a warning banner and publish a policy stating:",["They will never inspect computers","They reserve the right to inspect computing assets at will","Employees own all data","Only IT can use computers"],1,"This allows corporate investigators to examine assets."],
+[5,"Law enforcement may search and seize criminal evidence only with:",["Plain view","Probable cause","A warning banner","FOIA"],1,"Probable cause decides if an officer can arrest, search or get a warrant."],
+[5,"In warrants, 'innocent information' is:",["Evidence that proves innocence","Unrelated information mixed with the evidence","Information from witnesses","Deleted files"],1,"Judges add a limiting phrase to separate it from evidence."],
+[5,"A limiting phrase in a warrant allows police to:",["Seize everything","Separate innocent information from evidence","Skip probable cause","Ignore chain of custody"],1,"It limits what can be taken."],
+[5,"Which is NOT one of the three criteria of the plain view doctrine?",["Officer is where he/she has a legal right to be","Ordinary senses not enhanced by advanced technology","Discovery is by chance","Officer used a thermal camera to find it"],3,"Using advanced technology breaks the second criterion."],
+[5,"What is the first thing to do when assigned a digital investigation case?",["Buy new tools","Identify the nature of the case","Arrest the suspect","Write the report"],1,"Including whether it is private or public sector."],
+[5,"If removing computers would irreparably harm a business, they should:",["Be taken offsite immediately","Not be taken offsite","Be destroyed","Be sold"],1,"Process them on-site instead."],
+[5,"Law enforcement needs what to remove computers from a crime scene to a lab?",["A warning banner","A warrant","A HAZMAT bag","A FOIA request"],1,"A warrant is required."],
+[5,"Which is a HAZMAT guideline in the slides?",["Put the target drive in a special HAZMAT bag","Throw the drive away","Wash the drive with water","Open the drive in the field"],0,"Also: technician decontaminates the bag, check for high temperatures."],
+[5,"RAID stands for:",["Random Access Internal Drive","Redundant Array of Independent Disks","Remote Acquisition of Investigation Data","Registry And Index Data"],1,"RAID servers may need specialist help."],
+[5,"An initial-response field kit should be:",["Heavy with every tool","Lightweight and easy to transport","Left at the lab","Only software"],1,"The extensive-response kit holds all tools you can afford."],
+[5,"Bolt cutters, pry bar and hacksaw are listed in which kit?",["Initial-response field kit","Extensive-response field kit","FTK Imager kit","HAZMAT kit"],1,"These hand tools are in the extensive-response kit (Table 4-2)."],
+[5,"How many computer evidence bags (antistatic) are in the initial-response field kit?",["1","5","10","20"],2,"10 evidence bags; also 10 evidence log forms and 20 labels/tape/tags."],
+[5,"The goal of scene processing is to:",["Arrest everyone","Collect and secure digital evidence","Repair the computer","Interview the victim"],1,"Digital evidence is volatile, so respond quickly."],
+[5,"Which is a goal of securing a computer incident or crime scene?",["Keep information confidential","Post photos online","Let everyone touch the evidence","Turn off all lights"],0,"Goals: preserve evidence, keep info confidential, define a secure perimeter."],
+[5,"What is used to define a secure perimeter?",["Yellow barrier tape","Faraday bag","Write blocker","Warning banner"],0,"Yellow barrier tape marks the perimeter."],
+[5,"For a corporate incident, legal authority includes:",["Trespassing violations","Probable cause warrants only","FOIA","Plain view doctrine"],0,"The slide notes trespassing violations."],
+[5,"AFIS is used to:",["Identify fingerprints using a central database","Capture memory","Analyse network packets","Create disk images"],0,"Automated Fingerprint Identification System."],
+[5,"Which is a question to ask before acquiring digital evidence?",["Is the computer powered on when you arrive?","What colour is the computer?","How old is the suspect's car?","Which browser is fastest?"],0,"Other questions: take the whole computer? transport? suspect nearby? damaged? separate suspect?"],
+[5,"Which is a responsibility of a technical advisor?",["Know all aspects of the seized system","Sign the search warrant","Decide the verdict","Act as the defence lawyer"],0,"Also: direct investigator, secure scene, document strategy, ad hoc training, document activities, help search and seizure."],
+[5,"According to the Week 5 summary, digital evidence is anything stored or transmitted on:",["Paper only","Electronic or optical media","Only hard disks","Only the cloud"],1,"Electronic or optical media."],
+[5,"According to the summary, private and public sectors:",["Follow the same computing investigation rules","Follow completely different rules","Never investigate","Only follow FOIA"],0,"Same investigation rules."]
+];
+
+const list=document.getElementById('qlist'), scoreEl=document.getElementById('score');
+let state={}; let filter='all';
+try{const s=JSON.parse(localStorage.getItem('cf-quiz')||'{}');if(s&&typeof s==='object')state=s}catch(e){}
+function save(){try{localStorage.setItem('cf-quiz',JSON.stringify(state))}catch(e){}}
+const L='ABCD';
+function render(){
+  list.innerHTML='';let n=0;
+  Q.forEach((q,i)=>{
+    if(filter!=='all'&&String(q[0])!==filter)return;n++;
+    const d=document.createElement('div');d.className='q';
+    d.innerHTML=`<div class="qhead"><span class="qnum">Q${n}</span><div class="qtext">${q[1]} <span class="chip">W${q[0]}</span></div></div><div class="opts"></div>`;
+    const o=d.querySelector('.opts');
+    q[2].forEach((t,j)=>{const b=document.createElement('button');b.className='opt';b.id=`q${i}o${j}`;
+      b.innerHTML=`<span class="k">${L[j]}</span><span>${t}</span>`;b.onclick=()=>{state[i]=j;save();show(d,i);score()};o.appendChild(b)});
+    list.appendChild(d); if(state[i]!==undefined)show(d,i);
+  });score();
+}
+function show(d,i){
+  const q=Q[i],pick=state[i],ok=pick===q[3];
+  d.querySelectorAll('.opt').forEach((b,j)=>{b.disabled=true;if(j===q[3])b.classList.add('right');else if(j===pick)b.classList.add('wrong')});
+  if(!d.querySelector('.fb')){const f=document.createElement('div');f.className='fb '+(ok?'ok':'no');
+  f.innerHTML=`<b>${ok?'Correct!':'Not quite.'} Answer: ${L[q[3]]}. ${q[2][q[3]]}</b>${q[4]}`;d.appendChild(f)}
+}
+function score(){
+  const ids=Q.map((q,i)=>i).filter(i=>filter==='all'||String(Q[i][0])===filter);
+  const done=ids.filter(i=>state[i]!==undefined),right=done.filter(i=>state[i]===Q[i][3]);
+  scoreEl.textContent=`Score ${right.length} / ${done.length} · ${ids.length-done.length} left`;
+}
+document.querySelectorAll('.filters [data-f]').forEach(b=>b.onclick=()=>{filter=b.dataset.f;
+  document.querySelectorAll('.filters [data-f]').forEach(x=>x.setAttribute('aria-pressed',x===b));render()});
+document.getElementById('reset').onclick=()=>{state={};save();render()};
+document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  ['w3','w5','quiz'].forEach(k=>document.getElementById('p-'+k).hidden=k!==b.dataset.tab);window.scrollTo(0,0)});
+render();
+</script>
